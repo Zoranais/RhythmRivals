@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
-app.ConfigureCors(app.Environment.IsDevelopment());
+app.ConfigureCors(false);
 app.UseSerilogRequestLogging();
 
 app.UseMiddleware<RhythmRivals.WebAPI.Middlewares.ExceptionHandlerMiddleware>();

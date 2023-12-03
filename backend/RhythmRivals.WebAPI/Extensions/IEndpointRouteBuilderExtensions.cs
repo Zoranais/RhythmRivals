@@ -10,7 +10,7 @@ public static class IEndpointRouteBuilderExtensions
 {
     public static void MapSignalRHubs(this IEndpointRouteBuilder app)
     {
-        app.MapHub<GameHub>("/Game");
+        app.MapHub<GameHub>("/GameHub");
     }
 
     public static void MapApiEndpoints(this IEndpointRouteBuilder app)
