@@ -1,0 +1,21 @@
+<div class="container">
+  <h2>Join</h2>
+  <mat-form-field>
+    <mat-label>Game Id</mat-label>
+    <input
+      type="text"
+      matInput
+      [(ngModel)]="gameId"
+      (input)="onGameIdInputChange($event)"
+    />
+  </mat-form-field>
+  <button
+    disabled="{{ !validateGameId() }}"
+    (click)="join()"
+    mat-button
+    color="accent"
+    type="submit"
+  >
+    Join
+  </button>
+</div>

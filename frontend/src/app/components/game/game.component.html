@@ -1,0 +1,17 @@
+<div class="container">
+  @if (isLoading){
+  <h2>Connecting...</h2>
+  <mat-spinner></mat-spinner>
+  } @else if (!isJoined){
+  <mat-label>Name</mat-label>
+  <input type="text" matInput [(ngModel)]="name" />
+  <button
+    mat-button
+    color="accent"
+    disabled="{{ !validateName() }}"
+    (click)="join()"
+  >
+    Join
+  </button>
+  }
+</div>

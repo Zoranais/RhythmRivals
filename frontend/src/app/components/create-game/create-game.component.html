@@ -1,0 +1,18 @@
+<div class="container">
+  <h2>Create a New Game</h2>
+  <form [formGroup]="form" class="form" (ngSubmit)="onSubmit()">
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input type="text" matInput formControlName="name" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Spotify Url</mat-label>
+      <input type="text" matInput formControlName="spotifyUrl" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Rounds</mat-label>
+      <input type="number" matInput formControlName="rounds" />
+    </mat-form-field>
+    <button mat-button color="accent" type="submit">+ Create</button>
+  </form>
+</div>
