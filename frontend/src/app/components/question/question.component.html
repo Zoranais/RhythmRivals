@@ -1,12 +1,18 @@
 <div class="container">
   <p>Guess the song!</p>
+  @if(!selectedAnswer){
   <div class="answer-container">
     <div
-      class="answer"
+      class="answer selectable"
       *ngFor="let answer of round.answers"
       (click)="submitAnswer(answer)"
     >
       <p>{{ answer }}</p>
     </div>
   </div>
+  } @else {
+  <div class="answer">
+    <p>{{ selectedAnswer }}</p>
+  </div>
+  }
 </div>

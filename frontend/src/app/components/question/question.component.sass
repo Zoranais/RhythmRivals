@@ -5,8 +5,9 @@
     flex-direction: column
 
     .answer-container
-        column-count: 2
-        column-gap: 20px
+        display: grid
+        grid-template-columns: repeat(2, minmax(200px, 1fr))
+        gap: 10px 10px
 
     .answer
         background-color: darken(#242582, 5%)
@@ -15,6 +16,9 @@
         margin: 10px
         min-width: 150px
         max-width: 300px
+        user-select: none
 
+    .selectable
+        cursor: pointer
         &:hover
             background-color: darken(#242582, 15%)
