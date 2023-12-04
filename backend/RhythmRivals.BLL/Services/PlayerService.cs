@@ -47,7 +47,7 @@ public class PlayerService: IPlayerService
 
         if (game.Players.Any())
         {
-            await _hub.Clients.Group(gameId).SendAsync("PlayerDisconected", player);
+            await _hub.Clients.Group(gameId).SendAsync("PlayerDisconnected", player);
         }
         else
         {

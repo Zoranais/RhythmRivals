@@ -7,6 +7,7 @@ using RhythmRivals.BLL.Jobs;
 using RhythmRivals.Common.Constants;
 using RhythmRivals.Common.DTO;
 using RhythmRivals.Common.DTO.Game;
+using RhythmRivals.Common.Enums;
 using RhythmRivals.Common.Exceptions;
 using RhythmRivals.Common.Models;
 
@@ -70,13 +71,16 @@ public class GameService : IGameService
         var player = game.Players.FirstOrDefault(x => x.Name == answer.PlayerName) ?? throw new NotFoundException(nameof(Player), answer.PlayerName);
         var currentRound = game.CurrentRound ?? throw new BadRequestException("You can't answer when the round is not in progress.");
 
-        currentRound.SubmitedAnswers.Add(answer);
-
-        if(currentRound.SubmitedAnswers.Count == game.Players.Count())
+        if(!currentRound.SubmitedAnswers.Any(x => x.PlayerName == player.Name)) 
         {
-            var scheduler = await _schedulerFactory.GetScheduler();
-            await scheduler.UnscheduleJob(new TriggerKey($"{game.Id}-areveal"));
-            await RevealResults(game.Id);
+            currentRound.SubmitedAnswers.Add(answer);
+
+            if(currentRound.SubmitedAnswers.Count == game.Players.Count())
+            {
+                var scheduler = await _schedulerFactory.GetScheduler();
+                await scheduler.UnscheduleJob(new TriggerKey($"{game.Id}-areveal"));
+                await RevealResults(game.Id);
+            }
         }
     }
 
@@ -87,6 +91,13 @@ public class GameService : IGameService
         {
             throw new BadRequestException("ZeroFriendsIssue(((");
         }
+
+        if (game.State != GameState.Waiting) 
+        {
+            throw new BadRequestException("Invalid game state");
+        }
+
+        game.State = GameState.Running;
 
         // Call question distribution backround proccess
         await Schedule(DistributeQuestionJob.Create(gameId,
@@ -112,24 +123,25 @@ public class GameService : IGameService
         var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
         var round = game.CurrentRound ?? throw new NotFoundException(nameof(Round));
 
+        var correctAnswer = round.CorrectAnswer;
+        var answers = round.SubmitedAnswers
+            .OrderBy(x => x.AnsweredAt)
+            .Where(x => x.Value == correctAnswer)
+            .ToArray();
 
-        var answers = round.SubmitedAnswers.OrderBy(x => x.AnsweredAt).ToArray();
         for (int i = 0; i < answers.Length; i++)
         {
             var answer = answers[i];
             var player = game.Players.FirstOrDefault(x => x.Name == answer.PlayerName) 
                 ?? throw new NotFoundException(nameof(Player), answer.PlayerName);
 
-            if (answer.Value == round.CorrectAnswer)
-            {
-                player.Score += CalculateScore(i);
-            }
+            player.Score += CalculateScore(i + 1);
         }
 
         game.Rounds.Remove(game.CurrentRound);
 
         var playerDtos = _mapper.Map<IEnumerable<PlayerDto>>(game.Players);
-        await _hub.Clients.Group(gameId).SendAsync("RevealAnswer", playerDtos);
+        await _hub.Clients.Group(gameId).SendAsync("RevealAnswer", correctAnswer, playerDtos);
 
         if(game.CurrentRound == null)
         {
@@ -141,9 +153,12 @@ public class GameService : IGameService
             TimeSpan.FromSeconds(GameConstants.DISTRIBUTE_DELAY_IN_SECONDS)));
     }
 
-    public Task EndGame(string gameId)
+    public async Task EndGame(string gameId)
     {
-        throw new NotImplementedException();
+        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
+
+        game.State = GameState.Ended;
+        await _hub.Clients.Group(gameId).SendAsync("GameEnded");
     }
 
     private int CalculateScore(int answerNum)
