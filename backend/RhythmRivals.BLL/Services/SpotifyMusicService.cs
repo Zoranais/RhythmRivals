@@ -20,16 +20,29 @@ public class SpotifyMusicService : IMusicService
         var id = playlistUrl.Replace("https://open.spotify.com/playlist/", string.Empty);
         id = id.Split('?').First();
 
-        var playlist = await _httpService.SendAsync<object, PlaylistDto>($"{API_URL}/{id}/tracks", null, HttpMethod.Get, 
-            new KeyValuePair<string, string>("Authorization", $"{token.TokenType} {token.AccessToken}"));
+        PlaylistDto? playlist = null;
+        List<TrackObjectDto> tracks = new();
+
+        do
+        {
+            playlist = await _httpService.SendAsync<object, PlaylistDto>(
+                playlist?.Next ?? $"{API_URL}/{id}/tracks?limit=50", 
+                null,
+                HttpMethod.Get,
+                new KeyValuePair<string, string>("Authorization", $"{token.TokenType} {token.AccessToken}"));
+
+            if(playlist is not null)
+            {
+                tracks.AddRange(playlist.Items.Select(x => x.Track));
+            }
+        } while (playlist?.Next is not null);
 
         if (playlist == null || playlist.Items.Count == 0)
         {
             throw new BadRequestException("Invalid playlist url or empty playlist");
         }
 
-        return playlist.Items
-            .Select(x => x.Track)
+        return tracks
             .Where(x => x.PreviewUrl != null)
             .ToList();
     }

@@ -2,4 +2,5 @@
 public class PlaylistDto
 {
     public ICollection<PlaylistTrackObjectDto> Items { get; set; } = new List<PlaylistTrackObjectDto>();
+    public string? Next { get; set; }
 }

@@ -7,6 +7,7 @@ using RhythmRivals.BLL.Jobs;
 using RhythmRivals.Common.Constants;
 using RhythmRivals.Common.DTO;
 using RhythmRivals.Common.DTO.Game;
+using RhythmRivals.Common.DTO.SpotifyDtos;
 using RhythmRivals.Common.Enums;
 using RhythmRivals.Common.Exceptions;
 using RhythmRivals.Common.Models;
@@ -43,26 +44,6 @@ public class GameService : IGameService
         await InitGame(game, dto.SpotifyUrl);
 
         return game.Id;
-    }
-
-    private async Task InitGame(Game game, string playlistUrl)
-    {
-        var tracks = await _musicService.GetTracks(playlistUrl);
-
-        for (int i = 0; i < game.RoundCount; i++)
-        {
-            var round = new Round();
-
-            var randomTracks = Random.Shared.GetItems(tracks.ToArray(), 4);
-            round.Answers = randomTracks.Select(x => x.Name).ToList();
-            
-            var correctAnswer = Random.Shared.GetItems(randomTracks, 1).First();
-
-            round.CorrectAnswer = correctAnswer.Name;
-            round.PreviewUrl = correctAnswer.PreviewUrl;
-
-            game.Rounds.Add(round);
-        }
     }
 
     public async Task SubmitAnswer(Answer answer)
@@ -159,6 +140,43 @@ public class GameService : IGameService
 
         game.State = GameState.Ended;
         await _hub.Clients.Group(gameId).SendAsync("GameEnded");
+    }
+
+    private async Task InitGame(Game game, string playlistUrl)
+    {
+        var tracks = (await _musicService.GetTracks(playlistUrl)).ToArray();
+
+        for (int i = 0; i < game.RoundCount; i++)
+        {
+            var round = new Round();
+
+            var randomTracks = GetRandomUniqueTracks(tracks, 4);
+            round.Answers = randomTracks.Select(x => x.Name).ToList();
+
+            var correctAnswer = randomTracks[Random.Shared.Next(0, randomTracks.Count)];
+
+            round.CorrectAnswer = correctAnswer.Name;
+            round.PreviewUrl = correctAnswer.PreviewUrl;
+
+            game.Rounds.Add(round);
+        }
+    }
+
+    private List<TrackObjectDto> GetRandomUniqueTracks(TrackObjectDto[] tracks, int count)
+    {
+        var randomTracks = new List<TrackObjectDto>(count);
+
+        while (randomTracks.Count < count)
+        {
+            var item = tracks[Random.Shared.Next(0, tracks.Length)];
+
+            if (!randomTracks.Contains(item))
+            {
+                randomTracks.Add(item);
+            }
+        }
+
+        return randomTracks;
     }
 
     private int CalculateScore(int answerNum)
