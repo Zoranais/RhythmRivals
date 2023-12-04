@@ -24,6 +24,9 @@ public static class IApplicationBuilderExtensions
             var origin = app.ApplicationServices.GetRequiredService<IConfiguration>()["AllowedOrigin"]
                 ?? throw new ArgumentNullException("AllowedOrigin");
 
+            var test = app.ApplicationServices.GetRequiredService<ILogger<IConfiguration>>();
+            test.LogInformation($"Origin: {origin}");
+
             app.UseCors(builder => builder
                 .AllowAnyMethod()
                 .AllowAnyHeader()
