@@ -164,7 +164,7 @@ export class GameComponent implements OnInit {
     this.isRevealing = false;
 
     this.game.state = GameState.ended;
-    this.winner = this.game.players.sort((x) => -x.score)[0];
+    this.winner = this.game.players.sort((a, b) => b.score - a.score)[0];
   }
 
   public playerJoined(player: Player) {

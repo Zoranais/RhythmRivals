@@ -21,6 +21,8 @@ export class QuestionComponent implements OnChanges {
   @Input() round: Round;
   @Output() answerSubmitted = new EventEmitter<string>();
 
+  public selectedAnswer: string = undefined;
+
   constructor(private audioService: AudioService) {}
 
   ngOnChanges(simpleChanges: SimpleChanges) {
@@ -30,6 +32,7 @@ export class QuestionComponent implements OnChanges {
   }
 
   public submitAnswer(answer: string) {
+    this.selectedAnswer = answer;
     this.answerSubmitted.emit(answer);
   }
 }
