@@ -13,6 +13,8 @@ export class PlayerListComponent implements OnChanges {
   @Input() players: Player[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.players = changes['players'].currentValue.sort((x) => -x.score);
+    this.players = changes['players'].currentValue.sort(
+      (a, b) => b.score - a.score
+    );
   }
 }
