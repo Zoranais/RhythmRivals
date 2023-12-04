@@ -1,0 +1,12 @@
+<div class="container">
+  <p>Guess the song!</p>
+  <div class="answer-container">
+    <div
+      class="answer"
+      *ngFor="let answer of round.answers"
+      (click)="submitAnswer(answer)"
+    >
+      <p>{{ answer }}</p>
+    </div>
+  </div>
+</div>

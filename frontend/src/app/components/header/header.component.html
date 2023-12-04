@@ -1,5 +1,19 @@
 <mat-toolbar color="primary" class="header">
   <span><a routerLink="">Rhythm Rivals</a></span>
-  <a routerLink="create-game" mat-button>Create</a>
-  <a routerLink="about" mat-button>About</a>
+  <div class="menu-items">
+    <div>
+      <a routerLink="create-game" mat-button>Create</a>
+      <a routerLink="about" mat-button>About</a>
+    </div>
+    <div class="volume">
+      <mat-icon fontIcon="volume_up" style="margin-right: 10px"></mat-icon>
+      <mat-slider color="accent" min="0" max="1" step="0.1">
+        <input
+          matSliderThumb
+          [(ngModel)]="volume"
+          (ngModelChange)="setVolume()"
+        />
+      </mat-slider>
+    </div>
+  </div>
 </mat-toolbar>

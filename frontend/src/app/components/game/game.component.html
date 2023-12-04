@@ -13,5 +13,29 @@
   >
     Join
   </button>
+  } @else if (game){
+  <div class="lobby">
+    <app-player-list [players]="game.players"></app-player-list>
+    <div class="main-content">
+      <p class="title" *ngIf="game">{{ game.name }} - {{ game.id }}</p>
+      @if(isWaiting()){
+      <button color="accent" mat-button (click)="startGame()">
+        Start Game
+      </button>
+      } @else if(isDistributing && round) {
+      <app-question
+        [round]="round"
+        (answerSubmitted)="respond($event)"
+      ></app-question>
+      } @else if (isRevealing && correctAnswer) {
+      <p class="title">{{ correctAnswer }}</p>
+      } @else if (isEnded()){
+      <p class="title">Game Ended</p>
+      <p class="sub-title" *ngIf="winner">
+        Winner {{ winner.name }} with score {{ winner.score }}
+      </p>
+      }
+    </div>
+  </div>
   }
 </div>
