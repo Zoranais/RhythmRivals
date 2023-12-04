@@ -29,7 +29,7 @@ public static class IApplicationBuilderExtensions
                 .AllowAnyHeader()
                 .WithExposedHeaders("Token-Expired")
                 .AllowCredentials()
-                .WithOrigins(origin));
+                .WithOrigins(origin, "http://localhost", "https://localhost"));
         }
     }
 }

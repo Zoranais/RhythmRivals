@@ -6,6 +6,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { VolumeService } from '../../services/volume.service';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -26,6 +27,7 @@ export class HeaderComponent {
   public volume: number;
   constructor(private volumeService: VolumeService) {
     this.volume = this.volumeService.getVolume();
+    console.log(environment.apiUrl);
   }
   public setVolume() {
     console.log(this.volume);

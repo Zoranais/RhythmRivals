@@ -1,0 +1,41 @@
+version: "3.1"
+services:
+  rhythm-webapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - PROJECT_PORT=8080
+    container_name: "rhythm-webapi"
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    networks:
+      - back
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      AllowedOrigin: "http://rhythm-client"
+      Client_Id: "{client_id}"
+      Client_Secret: "{client_secret}"
+
+  rhythm-client:
+    depends_on:
+      - rhythm-webapi
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: "rhythm-client"
+    restart: on-failure
+    ports:
+      - "80:80"
+    environment:
+      API_URL: "http://rhythm-webapi:8080"
+    networks:
+      - back
+      - front
+
+networks:
+  back:
+    driver: bridge
+  front:
+    driver: bridge

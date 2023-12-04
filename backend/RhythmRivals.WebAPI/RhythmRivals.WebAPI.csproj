@@ -5,11 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>ae55ae7a-f4ec-4d93-a4f3-3926ee0991f9</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.8.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.7.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.7.0" />
     <PackageReference Include="Serilog" Version="3.1.1" />
