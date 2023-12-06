@@ -2,11 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RhythmRivals.BLL.Interfaces;
 using RhythmRivals.Common.DTO.SpotifyDtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RhythmRivals.BLL.Services;
 public class AccessTokenStorage
@@ -27,11 +23,11 @@ public class AccessTokenStorage
 
     public async Task<AccessTokenDto> GetAccessToken()
     {
-        if(accessToken == null)
+        if (accessToken == null)
         {
             return await Renew();
         }
-        if((DateTime.UtcNow - accessToken.ReceivedAt.AddSeconds(accessToken.ExpiresIn)).Minutes < 1)
+        if ((DateTime.UtcNow - accessToken.ReceivedAt.AddSeconds(accessToken.ExpiresIn)).Minutes < 1)
         {
             return await Renew();
         }

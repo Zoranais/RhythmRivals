@@ -13,8 +13,12 @@ public class NotFoundException : RequestException
     {
     }
 
-    public NotFoundException(string entityName, string id): base(STATUS_CODE, $"{entityName} with {id} id does not exist!")
+    public NotFoundException(string entityName, string id) : base(STATUS_CODE, $"{entityName} with {id} id does not exist!")
     {
-        
+    }
+
+    public static T ThrowIfNull<T>(T? value) where T : class
+    {
+        return value ?? throw new NotFoundException(nameof(value));
     }
 }

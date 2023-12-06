@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Quartz;
+using RhythmRivals.BLL.Helpers;
 using RhythmRivals.BLL.Hubs;
 using RhythmRivals.BLL.Interfaces;
 using RhythmRivals.BLL.Jobs;
@@ -22,9 +23,9 @@ public class GameService : IGameService
     private readonly ISchedulerFactory _schedulerFactory;
 
     public GameService(
-        IGameStorage gameStorage, 
-        IMusicService musicService, 
-        IHubContext<GameHub> hub, 
+        IGameStorage gameStorage,
+        IMusicService musicService,
+        IHubContext<GameHub> hub,
         IMapper mapper,
         ISchedulerFactory schedulerFactory)
     {
@@ -38,28 +39,32 @@ public class GameService : IGameService
     public async Task<string> CreateGame(CreateGameDto dto)
     {
         var game = _gameStorage.CreateGame();
-        game.RoundCount = dto.RoundCount;
+        game.TotalRounds = dto.RoundCount;
         game.Name = dto.Name;
 
         await InitGame(game, dto.SpotifyUrl);
+
+        await Schedule(DestroyInactiveGameJob
+            .Create(game.Id, TimeSpan.FromMinutes(10)));
 
         return game.Id;
     }
 
     public async Task SubmitAnswer(Answer answer)
     {
-        var game = _gameStorage.GetGame(answer.GameId) ?? throw new NotFoundException(nameof(Game), answer.GameId);
-        var player = game.Players.FirstOrDefault(x => x.Name == answer.PlayerName) ?? throw new NotFoundException(nameof(Player), answer.PlayerName);
-        var currentRound = game.CurrentRound ?? throw new BadRequestException("You can't answer when the round is not in progress.");
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(answer.GameId));
+        var player = NotFoundException.ThrowIfNull(game.Players.FirstOrDefault(x => x.Name == answer.PlayerName));
+        var currentRound = game.CurrentRoundEntity
+            ?? throw new BadRequestException("You can't answer when the round is not in progress.");
 
-        if(!currentRound.SubmitedAnswers.Any(x => x.PlayerName == player.Name)) 
+        if (!currentRound.SubmitedAnswers.Any(x => x.PlayerName == player.Name))
         {
             currentRound.SubmitedAnswers.Add(answer);
 
-            if(currentRound.SubmitedAnswers.Count == game.Players.Count())
+            if (currentRound.SubmitedAnswers.Count == game.Players.Count())
             {
                 var scheduler = await _schedulerFactory.GetScheduler();
-                await scheduler.UnscheduleJob(new TriggerKey($"{game.Id}-areveal"));
+                await scheduler.UnscheduleJob(TriggerKeyHelper.CreateRevealAnswerKey(game.Id));
                 await RevealResults(game.Id);
             }
         }
@@ -67,13 +72,13 @@ public class GameService : IGameService
 
     public async Task StartGame(string gameId)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
         if (game.Players.Count() < 2)
         {
             throw new BadRequestException("ZeroFriendsIssue(((");
         }
 
-        if (game.State != GameState.Waiting) 
+        if (game.State != GameState.Waiting)
         {
             throw new BadRequestException("Invalid game state");
         }
@@ -89,8 +94,8 @@ public class GameService : IGameService
 
     public async Task DistributeQuestion(string gameId)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
-        var roundDto = _mapper.Map<RoundDto>(game.CurrentRound);
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
+        var roundDto = _mapper.Map<RoundDto>(game.CurrentRoundEntity);
 
         await _hub.Clients.Group(gameId).SendAsync("DistributeQuestion", roundDto);
 
@@ -101,42 +106,34 @@ public class GameService : IGameService
 
     public async Task RevealResults(string gameId)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
-        var round = game.CurrentRound ?? throw new NotFoundException(nameof(Round));
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
+        var round = NotFoundException.ThrowIfNull(game.CurrentRoundEntity);
 
         var correctAnswer = round.CorrectAnswer;
         var answers = round.SubmitedAnswers
             .OrderBy(x => x.AnsweredAt)
-            .Where(x => x.Value == correctAnswer)
-            .ToArray();
+            .Where(x => x.Value == correctAnswer);
 
-        for (int i = 0; i < answers.Length; i++)
-        {
-            var answer = answers[i];
-            var player = game.Players.FirstOrDefault(x => x.Name == answer.PlayerName) 
-                ?? throw new NotFoundException(nameof(Player), answer.PlayerName);
+        UpdatePlayerScores(game, answers);
 
-            player.Score += CalculateScore(i + 1);
-        }
-
-        game.Rounds.Remove(game.CurrentRound);
+        game.Rounds.Remove(round);
 
         var playerDtos = _mapper.Map<IEnumerable<PlayerDto>>(game.Players);
         await _hub.Clients.Group(gameId).SendAsync("RevealAnswer", correctAnswer, playerDtos);
 
-        if(game.CurrentRound == null)
+        if (game.CurrentRoundEntity != null)
         {
-            await EndGame(gameId);
+            await Schedule(DistributeQuestionJob.Create(gameId,
+                TimeSpan.FromSeconds(GameConstants.DISTRIBUTE_DELAY_IN_SECONDS)));
             return;
         }
 
-        await Schedule(DistributeQuestionJob.Create(gameId,
-            TimeSpan.FromSeconds(GameConstants.DISTRIBUTE_DELAY_IN_SECONDS)));
+        await EndGame(gameId);
     }
 
     public async Task EndGame(string gameId)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException(nameof(Game), gameId);
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
 
         game.State = GameState.Ended;
         await _hub.Clients.Group(gameId).SendAsync("GameEnded");
@@ -146,7 +143,7 @@ public class GameService : IGameService
     {
         var tracks = (await _musicService.GetTracks(playlistUrl)).ToArray();
 
-        for (int i = 0; i < game.RoundCount; i++)
+        for (int i = 0; i < game.TotalRounds; i++)
         {
             var round = new Round();
 
@@ -179,9 +176,23 @@ public class GameService : IGameService
         return randomTracks;
     }
 
-    private int CalculateScore(int answerNum)
+    private void UpdatePlayerScores(Game game, IEnumerable<Answer> correctAnswers)
     {
-        return GameConstants.BASE_SCORE / answerNum;
+        int answerCount = 1;
+        foreach (var answer in correctAnswers)
+        {
+            var player = NotFoundException.ThrowIfNull(game.Players.FirstOrDefault(x => x.Name == answer.PlayerName));
+
+            player.Score += CalculateScore(answerCount++, game.CurrentRound);
+        }
+    }
+
+    private int CalculateScore(int answerNum, int round)
+    {
+        var roundModifier = 1 + round / 10.0;
+        var answerNumModifier = 1 + answerNum / 10.0;
+
+        return (int)(GameConstants.BASE_SCORE / answerNumModifier * roundModifier);
     }
 
     private async Task Schedule((IJobDetail jobDetail, ITrigger trigger) jobInfo)

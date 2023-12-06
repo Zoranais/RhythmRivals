@@ -8,7 +8,7 @@ using RhythmRivals.Common.Exceptions;
 using RhythmRivals.Common.Models;
 
 namespace RhythmRivals.BLL.Services;
-public class PlayerService: IPlayerService
+public class PlayerService : IPlayerService
 {
     private readonly IGameStorage _gameStorage;
     private readonly IMapper _mapper;
@@ -23,7 +23,7 @@ public class PlayerService: IPlayerService
 
     public async Task<GameDto> AddPlayer(string gameId, string name)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException("Game", gameId);
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
 
         if (game.Players.Where(x => x.Name == name).Any())
         {
@@ -40,8 +40,8 @@ public class PlayerService: IPlayerService
 
     public async Task RemovePlayer(string gameId, string playerName)
     {
-        var game = _gameStorage.GetGame(gameId) ?? throw new NotFoundException("Game", gameId);
-        var player = game.Players.FirstOrDefault(x => x.Name == playerName) ?? throw new NotFoundException("Player", playerName);
+        var game = NotFoundException.ThrowIfNull(_gameStorage.GetGame(gameId));
+        var player = NotFoundException.ThrowIfNull(game.Players.FirstOrDefault(x => x.Name == playerName));
 
         game.Players.Remove(player);
 

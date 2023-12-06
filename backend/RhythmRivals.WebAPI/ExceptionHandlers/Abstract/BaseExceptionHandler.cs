@@ -31,7 +31,7 @@ public abstract class BaseExceptionHandler : IExceptionHandler
 
     protected private HttpStatusCode GetExceptionStatusCode(Exception exception)
     {
-        if(exception is RequestException requestException)
+        if (exception is RequestException requestException)
         {
             return requestException.StatusCode;
         }

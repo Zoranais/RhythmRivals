@@ -18,7 +18,7 @@ public class GameStorage : IGameStorage
         do
         {
             id = GameIdHelper.GenerateGameId();
-        } 
+        }
         while (_storage.ContainsKey(id));
 
         var game = new Game { Id = id };
@@ -29,7 +29,7 @@ public class GameStorage : IGameStorage
 
     public void DeleteGame(string id)
     {
-        if(_storage.ContainsKey(id))
+        if (_storage.ContainsKey(id))
         {
             _storage.Remove(id);
         }
