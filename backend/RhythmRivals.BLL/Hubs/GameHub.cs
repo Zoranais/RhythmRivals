@@ -4,7 +4,7 @@ using RhythmRivals.Common.Models;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RhythmRivals.BLL.Hubs;
-public class GameHub: Hub
+public class GameHub : Hub
 {
     private readonly IGameService _gameService;
     private readonly IPlayerService _playerService;
@@ -17,7 +17,7 @@ public class GameHub: Hub
 
     public async Task Join(string gameId, string name)
     {
-        if(Context.Items.ContainsKey("game"))
+        if (Context.Items.ContainsKey("game"))
         {
             await Leave();
         }
@@ -37,7 +37,7 @@ public class GameHub: Hub
     {
         var playerInfo = GetCurrentPlayerInfo();
 
-        if(playerInfo.IsValid())
+        if (playerInfo.IsValid())
         {
             await _playerService.RemovePlayer(playerInfo.GameId, playerInfo.Name);
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, playerInfo.GameId);
@@ -50,7 +50,7 @@ public class GameHub: Hub
     {
         var playerInfo = GetCurrentPlayerInfo();
 
-        if(playerInfo.IsValid())
+        if (playerInfo.IsValid())
         {
             // If StartGame would also implement RESTART functionality, it would be security issue (every random player would have a possiblity to drop games)
             await _gameService.StartGame(playerInfo.GameId);
@@ -60,7 +60,7 @@ public class GameHub: Hub
     public async Task Respond(string? value)
     {
         var playerInfo = GetCurrentPlayerInfo();
-        if(!playerInfo.IsValid()) 
+        if (!playerInfo.IsValid())
         {
             await Leave();
             return;

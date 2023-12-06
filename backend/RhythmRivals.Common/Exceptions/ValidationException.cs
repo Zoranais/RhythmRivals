@@ -2,7 +2,7 @@
 using System.Net;
 
 namespace RhythmRivals.Common.Exceptions;
-public class ValidationException: RequestException 
+public class ValidationException : RequestException
 {
     private const HttpStatusCode STATUS_CODE = HttpStatusCode.BadRequest;
 

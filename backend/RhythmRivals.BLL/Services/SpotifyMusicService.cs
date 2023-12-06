@@ -26,12 +26,12 @@ public class SpotifyMusicService : IMusicService
         do
         {
             playlist = await _httpService.SendAsync<object, PlaylistDto>(
-                playlist?.Next ?? $"{API_URL}/{id}/tracks?limit=50", 
+                playlist?.Next ?? $"{API_URL}/{id}/tracks?limit=50",
                 null,
                 HttpMethod.Get,
                 new KeyValuePair<string, string>("Authorization", $"{token.TokenType} {token.AccessToken}"));
 
-            if(playlist is not null)
+            if (playlist is not null)
             {
                 tracks.AddRange(playlist.Items.Select(x => x.Track));
             }

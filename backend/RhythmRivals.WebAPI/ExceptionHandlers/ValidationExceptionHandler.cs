@@ -1,10 +1,9 @@
 ﻿using RhythmRivals.Common.Exceptions;
-using RhythmRivals.Common.Exceptions.Abstract;
 using RhythmRivals.WebAPI.ExceptionHandlers.Abstract;
 
 namespace RhythmRivals.WebAPI.ExceptionHandlers;
 
-public class ValidationExceptionHandler: BaseExceptionHandler
+public class ValidationExceptionHandler : BaseExceptionHandler
 {
     private readonly ILogger<RequestExceptionHandler> _logger;
 

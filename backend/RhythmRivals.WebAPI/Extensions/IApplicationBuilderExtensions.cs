@@ -1,17 +1,10 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using RhythmRivals.BLL.Hubs;
-using RhythmRivals.BLL.Interfaces;
-using RhythmRivals.Common.DTO.Game;
-using RhythmRivals.WebAPI.Validators;
-
-namespace RhythmRivals.WebAPI.Extensions;
+﻿namespace RhythmRivals.WebAPI.Extensions;
 
 public static class IApplicationBuilderExtensions
 {
     public static void ConfigureCors(this IApplicationBuilder app, bool isInDevelopment)
     {
-        if(isInDevelopment)
+        if (isInDevelopment)
         {
             app.UseCors(builder => builder
                .AllowAnyMethod()
