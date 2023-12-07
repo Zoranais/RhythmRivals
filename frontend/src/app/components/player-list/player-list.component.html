@@ -1,6 +1,11 @@
 <div class="container">
   <div class="player" *ngFor="let player of players">
     <p class="name">{{ player.name }}</p>
-    <p class="score">{{ player.score }}</p>
+    <div class="score-collection">
+      <p class="score">{{ player.score }}</p>
+      <app-fade-out-score
+        [scoreDifference]="getScoreDifference(player.name)"
+      ></app-fade-out-score>
+    </div>
   </div>
 </div>
