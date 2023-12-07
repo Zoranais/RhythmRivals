@@ -11,7 +11,6 @@ import { Player } from '../../models/player';
 import { PlayerListComponent } from '../player-list/player-list.component';
 import { Round } from '../../models/round';
 import { QuestionComponent } from '../question/question.component';
-import { AudioService } from '../../services/audio.service';
 import { GameState } from '../../models/game-state';
 import { CommonModule } from '@angular/common';
 
@@ -101,9 +100,13 @@ export class GameComponent implements OnInit {
 
   //invoke methods
   public join() {
+    this.isLoading = true;
     this.connection
       .invoke('Join', this.gameId, this.name)
-      .then(() => console.log('Join Executed'))
+      .then(() => {
+        console.log('Join Executed');
+        this.isLoading = false;
+      })
       .catch((err) => {
         console.log('Error while invoking: ' + err);
       });

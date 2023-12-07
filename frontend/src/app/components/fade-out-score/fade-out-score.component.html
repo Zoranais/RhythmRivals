@@ -1,0 +1,7 @@
+<p
+  class="score"
+  *ngIf="scoreDifference"
+  [@fade]="isVisible ? 'visible' : 'invisible'"
+>
+  {{ scoreDifference > 0 ? "+" : "-" }}{{ scoreDifference }}
+</p>
