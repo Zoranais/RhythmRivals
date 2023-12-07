@@ -1,10 +1,5 @@
 ﻿using RhythmRivals.Common.Exceptions.Abstract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RhythmRivals.Common.Exceptions;
 public class BadRequestException : RequestException

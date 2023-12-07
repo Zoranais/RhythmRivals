@@ -3,7 +3,7 @@ using RhythmRivals.Common.DTO.Game;
 
 namespace RhythmRivals.WebAPI.Validators;
 
-public class CreateGameDtoValidator: AbstractValidator<CreateGameDto>
+public class CreateGameDtoValidator : AbstractValidator<CreateGameDto>
 {
     public CreateGameDtoValidator()
     {

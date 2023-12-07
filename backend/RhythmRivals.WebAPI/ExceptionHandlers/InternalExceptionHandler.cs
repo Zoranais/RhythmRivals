@@ -1,9 +1,8 @@
-﻿using RhythmRivals.Common.Exceptions.Abstract;
-using RhythmRivals.WebAPI.ExceptionHandlers.Abstract;
+﻿using RhythmRivals.WebAPI.ExceptionHandlers.Abstract;
 
 namespace RhythmRivals.WebAPI.ExceptionHandlers;
 
-public class InternalExceptionHandler: BaseExceptionHandler
+public class InternalExceptionHandler : BaseExceptionHandler
 {
     private readonly ILogger<RequestExceptionHandler> _logger;
 

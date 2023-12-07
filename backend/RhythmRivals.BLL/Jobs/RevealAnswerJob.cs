@@ -1,9 +1,9 @@
 ﻿using Quartz;
+using RhythmRivals.BLL.Helpers;
 using RhythmRivals.BLL.Interfaces;
-using RhythmRivals.Common.Models;
 
 namespace RhythmRivals.BLL.Jobs;
-public class RevealAnswerJob: IJob
+public class RevealAnswerJob : IJob
 {
     private readonly IGameService _gameService;
 
@@ -22,13 +22,16 @@ public class RevealAnswerJob: IJob
 
     public static (IJobDetail jobDetail, ITrigger trigger) Create(string gameId, TimeSpan delay)
     {
-        var job = JobBuilder.Create<RevealAnswerJob>()
+        var job = JobBuilder
+            .Create<RevealAnswerJob>()
             .Build();
 
         job.JobDataMap.Put("gameId", gameId);
 
-        var trigger = TriggerBuilder.Create()
-            .WithIdentity($"{gameId}-areveal")
+        var trigger = TriggerBuilder
+            .Create()
+            .WithIdentity(TriggerKeyHelper
+                .CreateRevealAnswerKey(gameId))
             .StartAt(DateTime.UtcNow + delay)
             .Build();
 
