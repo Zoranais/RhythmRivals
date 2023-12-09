@@ -3,10 +3,12 @@
   <h2>Connecting...</h2>
   <mat-spinner></mat-spinner>
   } @else if (!isJoined){
-  <mat-label>Name</mat-label>
-  <input type="text" matInput [(ngModel)]="name" />
+  <mat-form-field>
+    <mat-label>Name</mat-label>
+    <input type="text" matInput [(ngModel)]="name" />
+  </mat-form-field>
   <button
-    mat-button
+    mat-raised-button
     color="accent"
     disabled="{{ !validateName() }}"
     (click)="join()"
@@ -19,7 +21,7 @@
     <div class="main-content">
       <p class="title" *ngIf="game">{{ game.name }} - {{ game.id }}</p>
       @if(isWaiting()){
-      <button color="accent" mat-button (click)="startGame()">
+      <button color="accent" mat-raised-button (click)="startGame()">
         Start Game
       </button>
       } @else if(isDistributing && round) {

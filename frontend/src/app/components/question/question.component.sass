@@ -1,3 +1,4 @@
+@import 'color'
 .container
     display: flex
     align-items: center
@@ -10,7 +11,7 @@
         gap: 10px 10px
 
     .answer
-        background-color: darken(#242582, 5%)
+        background-color: $primary-light
         border-radius: 10px
         padding: 10px
         margin: 10px
@@ -21,4 +22,4 @@
     .selectable
         cursor: pointer
         &:hover
-            background-color: darken(#242582, 15%)
+            background-color: darken($primary-light, 5%)
