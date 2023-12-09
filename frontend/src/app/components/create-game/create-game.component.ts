@@ -32,7 +32,13 @@ export class CreateGameComponent {
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
-      spotifyUrl: ['', Validators.required],
+      spotifyUrl: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^https:\/\/open\.spotify\.com\/playlist\//g),
+        ],
+      ],
       rounds: [3, [Validators.required, Validators.min(3), Validators.max(36)]],
     });
   }
