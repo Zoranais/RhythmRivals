@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
   providedIn: 'root',
 })
 export class VolumeService {
-  private volume: number = 1;
+  private volume: number = 0.2;
   private volumeKey = 'volume';
   private onVolumeChanged = new Subject<number>();
 
@@ -13,8 +13,8 @@ export class VolumeService {
 
   constructor() {
     var savedVolume = localStorage.getItem(this.volumeKey);
-    if (savedVolume) {
-      this.volume = Number.parseInt(savedVolume);
+    if (savedVolume != null) {
+      this.volume = Number.parseFloat(savedVolume);
     } else {
       this.setVolume(this.volume);
     }
