@@ -7,5 +7,6 @@ COPY . .
 RUN npm run build
 # Stage 2
 FROM nginx:latest
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /usr/src/app/dist/rhythm-rivals/browser /usr/share/nginx/html
 EXPOSE 80
