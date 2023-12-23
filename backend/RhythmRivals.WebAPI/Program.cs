@@ -5,7 +5,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHttpClient();
+
+builder.Services.AddSpotifyHttpClient();
+builder.Services.AddSpotifyAuthorizationHttpClient(builder.Configuration);
 
 builder.Services.AddCustomServices();
 builder.Services.AddSerilogLogging();
