@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Form, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -21,7 +21,7 @@ import { Router } from '@angular/router';
   templateUrl: './create-game.component.html',
   styleUrl: './create-game.component.sass',
 })
-export class CreateGameComponent {
+export class CreateGameComponent implements OnDestroy {
   public form: FormGroup;
   private unsubscribe$ = new Subject<void>();
 
@@ -57,9 +57,17 @@ export class CreateGameComponent {
         `${environment.apiUrl}/api/game`,
         dto
       );
-      response.pipe(takeUntil(this.unsubscribe$)).subscribe((gameId) => {
-        this.router.navigate([`/game/${gameId}`]);
-      });
+      response.pipe(takeUntil(this.unsubscribe$)).subscribe(
+        (gameId) => {
+          this.router.navigate([`/game/${gameId}`]);
+        },
+        (error) => console.log(error)
+      );
     }
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }
