@@ -5,6 +5,7 @@ using RhythmRivals.BLL.Helpers;
 using RhythmRivals.BLL.Hubs;
 using RhythmRivals.BLL.Interfaces;
 using RhythmRivals.BLL.Jobs;
+using RhythmRivals.BLL.Services.Abstract;
 using RhythmRivals.Common.Constants;
 using RhythmRivals.Common.DTO;
 using RhythmRivals.Common.DTO.Game;
@@ -14,12 +15,10 @@ using RhythmRivals.Common.Exceptions;
 using RhythmRivals.Common.Models;
 
 namespace RhythmRivals.BLL.Services;
-public class GameService : IGameService
+public class GameService : BaseService, IGameService
 {
     private readonly IMusicService _musicService;
     private readonly IGameStorage _gameStorage;
-    private readonly IHubContext<GameHub> _hub;
-    private readonly IMapper _mapper;
     private readonly ISchedulerFactory _schedulerFactory;
 
     public GameService(
@@ -27,12 +26,10 @@ public class GameService : IGameService
         IMusicService musicService,
         IHubContext<GameHub> hub,
         IMapper mapper,
-        ISchedulerFactory schedulerFactory)
+        ISchedulerFactory schedulerFactory): base(mapper, hub)
     {
         _gameStorage = gameStorage;
         _musicService = musicService;
-        _hub = hub;
-        _mapper = mapper;
         _schedulerFactory = schedulerFactory;
     }
 
@@ -143,14 +140,28 @@ public class GameService : IGameService
     {
         var tracks = (await _musicService.GetTracks(playlistUrl)).ToArray();
 
+        var trackPool = new List<TrackObjectDto>(tracks)
+            .OrderBy(x => Random.Shared.Next())
+            .ToList();
+
         for (int i = 0; i < game.TotalRounds; i++)
         {
             var round = new Round();
+            if(trackPool.Count == 0) 
+            {
+                trackPool =
+                [..new List<TrackObjectDto>(tracks)
+                    .OrderBy(x => Random.Shared.Next())];
+            }
+            var correctAnswer = trackPool.First();
+            var randomTracks = GetRandomUniqueTracks(tracks, correctAnswer, 4);
 
-            var randomTracks = GetRandomUniqueTracks(tracks, 4);
-            round.Answers = randomTracks.Select(x => x.Name).ToList();
+            trackPool.Remove(correctAnswer);
 
-            var correctAnswer = randomTracks[Random.Shared.Next(0, randomTracks.Count)];
+            round.Answers = randomTracks
+                .Select(x => x.Name)
+                .OrderBy(x => Random.Shared.Next())
+                .ToList();
 
             round.CorrectAnswer = correctAnswer.Name;
             round.PreviewUrl = correctAnswer.PreviewUrl;
@@ -159,9 +170,9 @@ public class GameService : IGameService
         }
     }
 
-    private List<TrackObjectDto> GetRandomUniqueTracks(TrackObjectDto[] tracks, int count)
+    private List<TrackObjectDto> GetRandomUniqueTracks(TrackObjectDto[] tracks, TrackObjectDto correctAnswer, int count)
     {
-        var randomTracks = new List<TrackObjectDto>(count);
+        var randomTracks = new List<TrackObjectDto>(count) { correctAnswer };
 
         while (randomTracks.Count < count)
         {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Form, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -21,7 +21,7 @@ import { Router } from '@angular/router';
   templateUrl: './create-game.component.html',
   styleUrl: './create-game.component.sass',
 })
-export class CreateGameComponent {
+export class CreateGameComponent implements OnDestroy {
   public form: FormGroup;
   private unsubscribe$ = new Subject<void>();
 
@@ -31,9 +31,15 @@ export class CreateGameComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      spotifyUrl: ['', Validators.required],
-      rounds: [0, Validators.required],
+      name: ['', [Validators.required, Validators.min(3), Validators.max(36)]],
+      spotifyUrl: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^https:\/\/open\.spotify\.com\/playlist\//g),
+        ],
+      ],
+      rounds: [3, [Validators.required, Validators.min(3), Validators.max(36)]],
     });
   }
 
@@ -51,9 +57,17 @@ export class CreateGameComponent {
         `${environment.apiUrl}/api/game`,
         dto
       );
-      response.pipe(takeUntil(this.unsubscribe$)).subscribe((gameId) => {
-        this.router.navigate([`/game/${gameId}`]);
-      });
+      response.pipe(takeUntil(this.unsubscribe$)).subscribe(
+        (gameId) => {
+          this.router.navigate([`/game/${gameId}`]);
+        },
+        (error) => console.log(error)
+      );
     }
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

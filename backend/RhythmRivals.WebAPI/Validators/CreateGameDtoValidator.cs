@@ -9,10 +9,10 @@ public class CreateGameDtoValidator : AbstractValidator<CreateGameDto>
     {
         RuleFor(x => x.Name)
             .MinimumLength(3)
-            .MaximumLength(18);
+            .MaximumLength(36);
 
         RuleFor(x => x.RoundCount)
-            .LessThanOrEqualTo(30)
+            .LessThanOrEqualTo(36)
             .GreaterThanOrEqualTo(3);
 
         RuleFor(x => x.SpotifyUrl)

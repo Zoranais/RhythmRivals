@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
@@ -13,6 +13,8 @@ import { Round } from '../../models/round';
 import { QuestionComponent } from '../question/question.component';
 import { GameState } from '../../models/game-state';
 import { CommonModule } from '@angular/common';
+import { GameService } from '../../services/game.service';
+import { AudioService } from '../../services/audio.service';
 
 @Component({
   selector: 'app-game',
@@ -29,7 +31,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './game.component.html',
   styleUrl: './game.component.sass',
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
   public isLoading = true;
   public gameId: string;
   public name = '';
@@ -45,7 +47,12 @@ export class GameComponent implements OnInit {
 
   private connection: signalR.HubConnection;
 
-  constructor(private router: Router, private route: ActivatedRoute) {
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private gameService: GameService,
+    private audioService: AudioService
+  ) {
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(`${environment.apiUrl}/GameHub`, {})
       .build();
@@ -64,6 +71,14 @@ export class GameComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.gameService.isExist(this.gameId).subscribe((exist) => {
+      if (!exist) {
+        this.router.navigate(['/']);
+      }
+    });
+
+    this.name = localStorage.getItem('username') ?? '';
+
     this.connection
       .start()
       .then(() => (this.isLoading = false))
@@ -101,6 +116,7 @@ export class GameComponent implements OnInit {
   //invoke methods
   public join() {
     this.isLoading = true;
+    localStorage.setItem('username', this.name);
     this.connection
       .invoke('Join', this.gameId, this.name)
       .then(() => {
@@ -184,5 +200,10 @@ export class GameComponent implements OnInit {
       );
       console.log('Player left: ', player);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.connection.stop();
+    this.audioService.stop();
   }
 }

@@ -1,18 +1,20 @@
 ﻿using RhythmRivals.BLL.Interfaces;
+using RhythmRivals.BLL.Services.HttpClients;
 using RhythmRivals.Common.DTO.SpotifyDtos;
 using RhythmRivals.Common.Exceptions;
 
 namespace RhythmRivals.BLL.Services;
 public class SpotifyMusicService : IMusicService
 {
-    private const string API_URL = "https://api.spotify.com/v1/playlists";
-    private readonly IHttpService _httpService;
     private readonly AccessTokenStorage _tokenStorage;
+    private readonly SpotifyApiService _spototifyApiService;
 
-    public SpotifyMusicService(IHttpService httpService, AccessTokenStorage tokenStorage)
+    public SpotifyMusicService(
+        AccessTokenStorage tokenStorage, 
+        SpotifyApiService spototifyApiService)
     {
-        _httpService = httpService;
         _tokenStorage = tokenStorage;
+        _spototifyApiService = spototifyApiService;
     }
     public async Task<ICollection<TrackObjectDto>> GetTracks(string playlistUrl)
     {
@@ -20,30 +22,15 @@ public class SpotifyMusicService : IMusicService
         var id = playlistUrl.Replace("https://open.spotify.com/playlist/", string.Empty);
         id = id.Split('?').First();
 
-        PlaylistDto? playlist = null;
-        List<TrackObjectDto> tracks = new();
+        var tracks = (await _spototifyApiService.GetPlaylistById(id, token))
+            .Where(x => x.PreviewUrl != null)
+            .ToList();
 
-        do
-        {
-            playlist = await _httpService.SendAsync<object, PlaylistDto>(
-                playlist?.Next ?? $"{API_URL}/{id}/tracks?limit=50",
-                null,
-                HttpMethod.Get,
-                new KeyValuePair<string, string>("Authorization", $"{token.TokenType} {token.AccessToken}"));
-
-            if (playlist is not null)
-            {
-                tracks.AddRange(playlist.Items.Select(x => x.Track));
-            }
-        } while (playlist?.Next is not null);
-
-        if (playlist == null || playlist.Items.Count == 0)
+        if (tracks.Count == 0)
         {
             throw new BadRequestException("Invalid playlist url or empty playlist");
         }
 
-        return tracks
-            .Where(x => x.PreviewUrl != null)
-            .ToList();
+        return tracks;
     }
 }
