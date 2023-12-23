@@ -2,22 +2,22 @@
 using Microsoft.AspNetCore.SignalR;
 using RhythmRivals.BLL.Hubs;
 using RhythmRivals.BLL.Interfaces;
+using RhythmRivals.BLL.Services.Abstract;
 using RhythmRivals.Common.DTO;
 using RhythmRivals.Common.DTO.Game;
 using RhythmRivals.Common.Exceptions;
 using RhythmRivals.Common.Models;
 
 namespace RhythmRivals.BLL.Services;
-public class PlayerService : IPlayerService
+public class PlayerService : BaseService, IPlayerService
 {
     private readonly IGameStorage _gameStorage;
-    private readonly IMapper _mapper;
-    private readonly IHubContext<GameHub> _hub;
 
-    public PlayerService(IHubContext<GameHub> hub, IMapper mapper, IGameStorage gameStorage)
+    public PlayerService(
+        IHubContext<GameHub> hub, 
+        IMapper mapper, 
+        IGameStorage gameStorage): base(mapper, hub)
     {
-        _hub = hub;
-        _mapper = mapper;
         _gameStorage = gameStorage;
     }
 
