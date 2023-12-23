@@ -11,7 +11,7 @@
     </mat-form-field>
     <mat-form-field>
       <mat-label>Rounds</mat-label>
-      <input type="number" matInput formControlName="rounds" />
+      <input type="number" matInput min="3" max="36" formControlName="rounds" />
     </mat-form-field>
     <button mat-raised-button color="accent" type="submit">+ Create</button>
   </form>

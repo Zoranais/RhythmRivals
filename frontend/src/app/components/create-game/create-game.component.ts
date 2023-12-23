@@ -31,9 +31,15 @@ export class CreateGameComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      spotifyUrl: ['', Validators.required],
-      rounds: [0, Validators.required],
+      name: ['', [Validators.required, Validators.min(3), Validators.max(36)]],
+      spotifyUrl: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^https:\/\/open\.spotify\.com\/playlist\//g),
+        ],
+      ],
+      rounds: [3, [Validators.required, Validators.min(3), Validators.max(36)]],
     });
   }
 
