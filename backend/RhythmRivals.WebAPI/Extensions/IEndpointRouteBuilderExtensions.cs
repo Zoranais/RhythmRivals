@@ -26,5 +26,12 @@ public static class IEndpointRouteBuilderExtensions
 
             return Results.Created("api/game", await gameService.CreateGame(dto));
         });
+
+        app.MapGet("api/game/isExist/{gameId}", (string gameId, IGameStorage gameStorage) =>
+        {
+            var result = gameStorage.GetGame(gameId) is not null;
+
+            return Results.Ok(result);
+        });
     }
 }
